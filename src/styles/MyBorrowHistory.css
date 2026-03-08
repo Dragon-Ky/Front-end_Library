@@ -1,0 +1,145 @@
+/* Page */
+.borrow-page {
+    background: #f5f7fb;
+    min-height: 100vh;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Header */
+.header-bar {
+    background: white;
+    padding: 14px 28px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+.page-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: #333;
+}
+
+/* Back button */
+.back-button {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    color: #666;
+    font-size: 13px;
+    font-weight: 500;
+    transition: 0.2s;
+}
+
+.back-button:hover {
+    color: #2563eb;
+}
+
+.back-icon {
+    width: 16px;
+    height: 16px;
+    margin-right: 5px;
+}
+
+/* Container */
+.borrow-container {
+    max-width: 1100px;
+    margin: 40px auto;
+    background: white;
+    border-radius: 10px;
+    padding: 24px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+/* Action bar */
+.action-bar {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 20px;
+}
+
+/* Refresh button */
+.refresh-btn {
+    background: #2563eb;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.refresh-btn:hover {
+    background: #1d4ed8;
+}
+
+/* Table */
+.borrow-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+.borrow-table thead {
+    background: #f3f4f6;
+}
+
+.borrow-table th {
+    padding: 14px;
+    text-align: left;
+    font-weight: 600;
+    color: #555;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.borrow-table td {
+    padding: 14px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.borrow-table tbody tr:hover {
+    background: #fafafa;
+}
+
+/* Align center */
+.text-center {
+    text-align: center;
+}
+
+/* Status badges */
+.status {
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.status-returned {
+    background: #dcfce7;
+    color: #15803d;
+}
+
+.status-borrowed {
+    background: #dbeafe;
+    color: #1d4ed8;
+}
+
+.status-lost {
+    background: #fee2e2;
+    color: #b91c1c;
+}
+
+.status-default {
+    background: #e5e7eb;
+    color: #374151;
+}
+
+/* Loading */
+.empty-row {
+    text-align: center;
+    padding: 30px;
+    color: #777;
+}
