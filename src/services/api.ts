@@ -1,35 +1,41 @@
-import axios from 'axios';
+import axios, { InternalAxiosRequestConfig, AxiosResponse, AxiosError } from 'axios';
 
+// 1. Khởi tạo instance với cấu hình cơ bản
 const api = axios.create({
-    baseURL: 'http://localhost:8080', // URL backend của bạn
+    // Lưu ý: Khi deploy lên Render, hãy thay localhost thành URL của Back-end Render
+    baseURL: 'https://backend-cua-ban.onrender.com', 
 });
 
-// Interceptor: Cứ mỗi lần gọi api, nó sẽ tự chèn Token vào
+// 2. Interceptor cho Request: Tự động đính kèm JWT Token
 api.interceptors.request.use(
-    (config) => {
-        const token = localStorage.getItem('token'); // Lấy từ localStorage
-        if (token) {
-            config.headers.Authorization = `Bearer ${token}`; // Thêm vào Header
+    (config: InternalAxiosRequestConfig) => {
+        const token = localStorage.getItem('token');
+        if (token && config.headers) {
+            // Thêm Bearer Token vào header Authorization
+            config.headers.Authorization = `Bearer ${token}`;
         }
         return config;
     },
-    (error) => {
+    (error: AxiosError) => {
+        // Xử lý lỗi khi gửi request
         return Promise.reject(error);
     }
 );
 
-// Bắt lỗi 401 từ server trả về (Token hết hạn/Không hợp lệ)
+// 3. Interceptor cho Response: Xử lý dữ liệu trả về và lỗi tập trung
 api.interceptors.response.use(
-    (response) => {
+    (response: AxiosResponse) => {
+        // Trả về dữ liệu trực tiếp nếu thành công
         return response;
     },
-    (error) => {
+    (error: AxiosError) => {
+        // Kiểm tra nếu lỗi từ Server trả về (401: Hết hạn token, 403: Không có quyền)
         if (error.response && (error.response.status === 401 || error.response.status === 403)) {
-            // Token hết hạn hoặc truy cập trái phép
+            // Xóa sạch thông tin cũ để đảm bảo an toàn
             localStorage.removeItem('token');
             localStorage.removeItem('role');
 
-            // Chuyển hướng người dùng về trang login
+            // Điều hướng về trang login nếu không phải đang ở trang login
             if (window.location.pathname !== '/login') {
                 window.location.href = '/login';
             }
