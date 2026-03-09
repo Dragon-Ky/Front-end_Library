@@ -3,7 +3,7 @@ import axios, { type InternalAxiosRequestConfig, type AxiosResponse, AxiosError 
 // 1. Khởi tạo instance với cấu hình cơ bản
 const api = axios.create({
     // Lưu ý: Khi deploy lên Render, hãy thay localhost thành URL của Back-end Render
-    baseURL: 'https://backend-cua-ban.onrender.com', 
+    baseURL: 'https://front-end-library.onrender.com', 
 });
 
 // 2. Interceptor cho Request: Tự động đính kèm JWT Token
