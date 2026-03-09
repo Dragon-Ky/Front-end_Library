@@ -3,7 +3,6 @@ import axios, { type InternalAxiosRequestConfig, type AxiosResponse, AxiosError 
 // 1. Khởi tạo instance với cấu hình chính xác
 const api = axios.create({
     // SỬA TẠI ĐÂY: Thay bằng URL Backend của bạn trên Render
-    // Ví dụ: https://bookstore-api-xxxx.onrender.com
     baseURL: 'https://bookstore-api-abb8.onrender.com', 
     headers: {
         'Content-Type': 'application/json',
@@ -36,8 +35,8 @@ api.interceptors.response.use(
         if (error.response && (error.response.status === 401 || error.response.status === 403)) {
             localStorage.removeItem('token');
             localStorage.removeItem('role');
-            if (window.location.pathname !== '/login') {
-                window.location.href = '/login';
+            if (window.location.pathname !== '/users/login') {
+                window.location.href = '/users/login';
             }
         }
         return Promise.reject(error);
