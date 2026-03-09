@@ -1,4 +1,4 @@
-import axios, { InternalAxiosRequestConfig, AxiosResponse, AxiosError } from 'axios';
+import axios, { type InternalAxiosRequestConfig, type AxiosResponse, AxiosError } from 'axios';
 
 // 1. Khởi tạo instance với cấu hình cơ bản
 const api = axios.create({
