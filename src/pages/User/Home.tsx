@@ -111,32 +111,38 @@ const Home = () => {
 
                                 <div className="book-body">
                                     <span className="book-tag">{book.category}</span>
-                                    <h3 className="book-name" title={book.title}>{book.title}</h3>
-                                    <p className="book-writer">
-                                        <span className="author-label">Tác giả:</span> {book.author}
+
+                                    <h3 className="book-title-text" title={book.title}>
+                                        {book.title}
+                                    </h3>
+
+                                    <p className="book-meta-data">
+                                        <b>Tác giả:</b> {book.author}
                                     </p>
 
-
-                                    {/* HIỂN THỊ SỐ LƯỢNG CÒN LẠI */}
                                     <div className="fhs-progress-container">
                                         <div className="fhs-progress-bar">
                                             <div
                                                 className="fhs-progress-fill"
                                                 style={{ width: `${Math.min((book.availableQuantity / 50) * 100, 100)}%` }}
                                             ></div>
+
                                             <span className="fhs-progress-text">
-                                                {book.availableQuantity > 0 ? `Còn lại ${book.availableQuantity}` : 'Hết sách'}
+                                                {book.availableQuantity > 0
+                                                    ? `Còn lại ${book.availableQuantity}`
+                                                    : "Hết sách"}
                                             </span>
                                         </div>
                                     </div>
 
-                                    <div className="book-actions">
+                                    <div className="book-actions-footer">
                                         <button
                                             className="btn-action btn-outline"
                                             onClick={() => handleViewDetails(book.id)}
                                         >
                                             Chi tiết
                                         </button>
+
                                         <button
                                             disabled={book.availableQuantity <= 0}
                                             className={`btn-action btn-primary ${book.availableQuantity <= 0 ? 'disabled' : ''}`}

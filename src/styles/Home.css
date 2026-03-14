@@ -63,6 +63,9 @@
 
 .book-body {
     padding: 14px;
+    display: flex;
+    flex-direction: column;
+    height: 220px;
 }
 
 .book-tag {
@@ -228,4 +231,43 @@
     text-align: center;
     padding: 60px;
     font-size: 16px;
+}
+/* Khung chứa nội dung văn bản trong card */
+.book-info-content {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1; /* Để phần này chiếm hết không gian trống */
+}
+
+/* Xử lý tiêu đề dài */
+.book-title-text {
+    font-size: 15px;
+    font-weight: 700;
+    color: #222;
+    margin-top: 6px;
+
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+
+    overflow: hidden;
+    text-overflow: ellipsis;
+
+    line-height: 20px;
+    height: 40px;
+}
+
+/* Các thông tin phụ (Tác giả, số lượng) */
+.book-meta-data {
+    font-size: 13px;
+    color: #666;
+    margin-top: 4px;
+}
+
+/* Đẩy cụm nút bấm xuống dưới cùng */
+.book-actions-footer {
+    margin-top: auto;
+    display: flex;
+    gap: 8px;
 }
