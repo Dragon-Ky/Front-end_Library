@@ -6,9 +6,9 @@ import "../../styles/MyBorrowHistory.css";
 interface BorrowResponse {
     id: number;
     bookTitle?: string;
-    borrowDate?: string;
-    dueDate?: string;
-    returnDate?: string | null;
+    borrow_date?: string;
+    due_date?: string;
+    return_date?: string | null;
     status?: string;
     [key: string]: any;
 }
