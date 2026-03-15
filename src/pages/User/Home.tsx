@@ -19,6 +19,7 @@ const Home = () => {
     const [loading, setLoading] = useState(true);
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(0);
+    const [searchKeyword, setSearchKeyword] = useState('');
     const pageSize = 10;
 
     useEffect(() => {
@@ -26,9 +27,11 @@ const Home = () => {
         if (!token) {
             navigate('/login');
         } else {
-            fetchBooks(currentPage);
+            if (searchKeyword.trim() === '') {
+                fetchBooks(currentPage);
+            }
         }
-    }, [navigate, currentPage]);
+    }, [navigate, currentPage, searchKeyword]);
 
     const fetchBooks = async (page: number) => {
         setLoading(true);
@@ -49,6 +52,27 @@ const Home = () => {
             localStorage.removeItem('token');
             localStorage.removeItem('role');
             navigate('/login');
+        }
+    };
+
+    const handleSearch = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!searchKeyword.trim()) {
+            fetchBooks(1);
+            return;
+        }
+
+        setLoading(true);
+        try {
+            // Gọi đúng endpoint: /books/search?keyword=...
+            const response = await api.get(`/books/search?keyword=${searchKeyword}`);
+            // API trả về List<BookResponse> trực tiếp trong result
+            setBooks(response.data.result);
+            setTotalPages(0); // Ẩn phân trang khi tìm kiếm
+        } catch (error) {
+            console.error('Lỗi tìm kiếm:', error);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -94,6 +118,18 @@ const Home = () => {
             <div className="home-container">
                 <div className="section-header">
                     <h2 className="section-title">DANH MỤC SÁCH THƯ VIỆN 📚</h2>
+                    <form onSubmit={handleSearch} className="search-form">
+                        <input
+                            type="text"
+                            placeholder="Tìm kiếm sách..."
+                            value={searchKeyword}
+                            onChange={(e) => setSearchKeyword(e.target.value)}
+                            className="search-input"
+                        />
+                        <button type="submit" className="btn-action btn-primary" style={{ padding: '8px 20px', flex: 'none' }}>
+                            Tìm
+                        </button>
+                    </form>
                 </div>
 
                 {loading ? (
