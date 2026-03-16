@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import { Eye, EyeOff } from 'lucide-react'; // Import icon
 import '../styles/Register.css';
@@ -13,11 +13,14 @@ const Register = () => {
         age: 18
     });
 
+    const navigate = useNavigate();
+
     // 1. Quản lý trạng thái ẩn/hiện cho 2 ô mật khẩu riêng biệt
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-
-    const navigate = useNavigate();
+    const [otpSent, setOtpSent] = useState(false);
+    const [isSendingOtp, setIsSendingOtp] = useState(false);
+    const [otp, setOtp] = useState('');
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
@@ -27,8 +30,11 @@ const Register = () => {
         });
     };
 
-    const handleRegister = async (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
+    const handleSendOtp = async () => {
+        if (!formData.name || !formData.email || !formData.age || !formData.password || !formData.confirmPassword) {
+            alert("Vui lòng điền đầy đủ thông tin (Tên, Email, Tuổi, Mật khẩu) trước khi xác thực!");
+            return;
+        }
         if (formData.password !== formData.confirmPassword) {
             alert("Mật khẩu xác nhận không khớp!");
             return;
@@ -40,6 +46,7 @@ const Register = () => {
             return;
         }
 
+        setIsSendingOtp(true);
         try {
             await api.post('/users/register', {
                 name: formData.name,
@@ -47,11 +54,44 @@ const Register = () => {
                 password: formData.password,
                 age: formData.age
             });
-            alert("Đăng ký thành công!");
+            setOtpSent(true);
+            alert("Mã OTP đã được gửi đến email của bạn!");
+        } catch (error) {
+            // Nếu email đã được đăng ký nhưng chưa xác thực, thử gọi API gửi lại mã
+            try {
+                await api.post(`/users/resend-verification?email=${formData.email}`);
+                setOtpSent(true);
+                alert("Mã OTP đã được gửi lại!");
+            } catch (resendError) {
+                console.error("Lỗi gửi OTP:", resendError);
+                alert("Email đã tồn tại và đã được kích hoạt, hoặc xảy ra lỗi!");
+            }
+        } finally {
+            setIsSendingOtp(false);
+        }
+    };
+
+
+    const handleRegister = async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        
+        if (!otpSent) {
+            alert("Vui lòng nhấn 'Xác thực' để nhận mã OTP trước khi đăng ký!");
+            return;
+        }
+
+        if (otp.length !== 6) {
+            alert("Mã OTP phải bao gồm 6 số!");
+            return;
+        }
+
+        try {
+            await api.post(`/users/verify-otp?email=${formData.email}&otp=${otp}`);
+            alert('Đăng ký tài khoản thành công!');
             navigate('/login');
         } catch (error) {
-            console.error("Lỗi đăng ký:", error);
-            alert("Đăng ký thất bại, vui lòng thử lại!");
+            console.error("Lỗi xác thực:", error);
+            alert("Mã OTP không hợp lệ hoặc đã hết hạn!");
         }
     };
 
@@ -65,10 +105,26 @@ const Register = () => {
                         <input name="name" type="text" placeholder="Nguyễn Văn A" value={formData.name} onChange={handleChange} required />
                     </div>
 
+                    <div className="form-group" style={{ marginBottom: '15px' }}>
+                        <label>Email</label>
+                        <div style={{ display: 'flex', gap: '10px' }}>
+                            <input name="email" type="email" placeholder="example@mail.com" value={formData.email} onChange={handleChange} required style={{ flex: 1 }} />
+                            <button 
+                                type="button" 
+                                className="btn-submit" 
+                                onClick={handleSendOtp} 
+                                disabled={isSendingOtp}
+                                style={{ width: 'auto', padding: '0 15px', marginTop: 0, backgroundColor: otpSent ? '#28a745' : '#007bff' }}
+                            >
+                                {isSendingOtp ? 'Đang gửi...' : otpSent ? 'Gửi lại mã' : 'Xác thực'}
+                            </button>
+                        </div>
+                    </div>
+
                     <div className="form-row" style={{ display: 'flex', gap: '10px' }}>
                         <div className="form-group" style={{ flex: 2 }}>
-                            <label>Email</label>
-                            <input name="email" type="email" placeholder="example@mail.com" value={formData.email} onChange={handleChange} required />
+                            <label>Mã OTP</label>
+                            <input type="text" placeholder="Nhập mã 6 số" value={otp} onChange={(e) => setOtp(e.target.value)} required maxLength={6} disabled={!otpSent} />
                         </div>
                         <div className="form-group" style={{ flex: 1 }}>
                             <label>Tuổi</label>

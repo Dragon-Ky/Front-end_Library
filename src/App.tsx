@@ -3,6 +3,8 @@ import Login from './pages/Login';
 import AdminDashboard from './pages/Admin/AdminDashboard';
 import Home from './pages/User/Home';
 import Register from './pages/Register';
+import ResetPassword from './pages/ResetPassword';
+import ResendVerification from './pages/ResendVerification';
 import BookDetail from './pages/User/BookDetail';
 import ProtectedRoute from './components/ProtectedRoute';
 import MyBorrowHistory from './pages/User/MyBorrowHistory';
@@ -12,6 +14,8 @@ function App() {
     <Routes>
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
+      <Route path="/resend-verification" element={<ResendVerification />} />
       <Route path="/admin/dashboard" element={
         <ProtectedRoute requireAdmin={true}>
           <AdminDashboard />

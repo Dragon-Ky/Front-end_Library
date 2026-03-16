@@ -41,7 +41,7 @@ const Login = () => {
         <div className="login-wrapper">
             <div className="auth-container login-bg">
                 <div className="auth-card">
-                    <h2 className="auth-title">Chào mừng trở lại! 📚</h2>
+                    <h2 className="auth-title">Chào mừng đến với 📚</h2>
                     <p className="auth-subtitle">Hệ thống quản lý mượn sách</p>
 
                     <form onSubmit={handleSubmit} className="auth-form">
@@ -85,6 +85,9 @@ const Login = () => {
                     </form>
 
                     <div className="auth-footer">
+                        <p style={{ marginBottom: '8px' }}>
+                            <Link to="/reset-password" style={{ color: '#007bff' }}>Quên mật khẩu?</Link>
+                        </p>
                         <p>Chưa có tài khoản? <Link to="/register">Đăng ký ngay</Link></p>
                     </div>
                 </div>
