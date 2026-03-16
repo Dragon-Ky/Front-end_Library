@@ -3,8 +3,8 @@ import axios, { type InternalAxiosRequestConfig, type AxiosResponse, AxiosError 
 // 1. Khởi tạo instance với cấu hình chính xác
 const api = axios.create({
     // SỬA TẠI ĐÂY: Thay bằng URL Backend của bạn trên Render
-    //baseURL: 'https://bookstore-api-abb8.onrender.com',
-    baseURL: 'http://localhost:8080', // Dùng cho local development
+    baseURL: 'https://bookstore-api-abb8.onrender.com',
+    //baseURL: 'http://localhost:8080', // Dùng cho local development
     headers: {
         'Content-Type': 'application/json',
     }
