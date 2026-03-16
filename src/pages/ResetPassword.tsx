@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import api from '../services/api';
 import { Eye, EyeOff } from 'lucide-react';
@@ -16,8 +16,22 @@ const ResetPassword = () => {
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [otpSent, setOtpSent] = useState(false);
     const [isLoadingOTP, setIsLoadingOTP] = useState(false);
+    
+    // Quản lý đếm ngược (Countdown)
+    const [countdown, setCountdown] = useState(0);
 
     const navigate = useNavigate();
+
+    // Logic xử lý bộ đếm ngược 1 giây mỗi lần
+    useEffect(() => {
+        let timer: ReturnType<typeof setInterval>;
+        if (countdown > 0) {
+            timer = setInterval(() => {
+                setCountdown((prev) => prev - 1);
+            }, 1000);
+        }
+        return () => clearInterval(timer);
+    }, [countdown]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
@@ -32,14 +46,27 @@ const ResetPassword = () => {
             alert("Vui lòng nhập email trước khi gửi mã OTP!");
             return;
         }
+
         setIsLoadingOTP(true);
         try {
             await api.post(`/users/forgot-password?email=${formData.email}`);
             alert("Mã OTP đã được gửi đến email của bạn!");
             setOtpSent(true);
-        } catch (error) {
+            setCountdown(60); // Bắt đầu đếm ngược 60 giây sau khi gửi thành công
+        } catch (error: any) {
             console.error("Lỗi gửi OTP:", error);
-            alert("Không thể gửi OTP, email có thể không tồn tại trong hệ thống!");
+            let errorMessage = error.response?.data?.message || "Lỗi hệ thống";
+            
+            // Nếu Backend báo lỗi Rate Limit (ví dụ: cần đợi thêm giây)
+            const match = errorMessage.match(/\d+/);
+            if (match) {
+                let seconds = parseInt(match[0]);
+                if (seconds > 60) seconds = 60; // Fix lỗi lệch múi giờ nếu có
+                setCountdown(seconds);
+                alert(`Vui lòng đợi ${seconds} giây nữa trước khi gửi lại.`);
+            } else {
+                alert("Không thể gửi OTP, email có thể không tồn tại trong hệ thống!");
+            }
         } finally {
             setIsLoadingOTP(false);
         }
@@ -73,9 +100,10 @@ const ResetPassword = () => {
             });
             alert("Đổi mật khẩu thành công!");
             navigate('/login');
-        } catch (error) {
+        } catch (error: any) {
             console.error("Lỗi đổi mật khẩu:", error);
-            alert("Đổi mật khẩu thất bại, mã OTP có thể không chính xác hoặc đã hết hạn!");
+            const msg = error.response?.data?.message || "Mã OTP không chính xác hoặc đã hết hạn!";
+            alert(msg);
         }
     };
 
@@ -103,10 +131,17 @@ const ResetPassword = () => {
                                     type="button" 
                                     className="btn-submit" 
                                     onClick={handleSendOTP} 
-                                    disabled={isLoadingOTP}
-                                    style={{ width: 'auto', padding: '0 15px', marginTop: 0, backgroundColor: otpSent ? '#28a745' : '#007bff' }}
+                                    // Vô hiệu hóa nút khi đang load hoặc đang đếm ngược
+                                    disabled={isLoadingOTP || countdown > 0}
+                                    style={{ 
+                                        width: 'auto', 
+                                        padding: '0 15px', 
+                                        marginTop: 0, 
+                                        backgroundColor: (isLoadingOTP || countdown > 0) ? '#6c757d' : (otpSent ? '#28a745' : '#007bff'),
+                                        cursor: (isLoadingOTP || countdown > 0) ? 'not-allowed' : 'pointer'
+                                    }}
                                 >
-                                    {isLoadingOTP ? 'Đang gửi...' : otpSent ? 'Gửi lại mã' : 'Gửi mã OTP'}
+                                    {isLoadingOTP ? 'Đang gửi...' : countdown > 0 ? `Đợi ${countdown}s` : otpSent ? 'Gửi lại mã' : 'Gửi mã OTP'}
                                 </button>
                             </div>
                         </div>

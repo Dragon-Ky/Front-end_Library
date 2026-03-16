@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import { Eye, EyeOff } from 'lucide-react'; // Import icon
@@ -15,12 +15,28 @@ const Register = () => {
 
     const navigate = useNavigate();
 
-    // 1. Quản lý trạng thái ẩn/hiện cho 2 ô mật khẩu riêng biệt
+    // Quản lý trạng thái ẩn/hiện mật khẩu
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+    
+    // Quản lý trạng thái OTP
     const [otpSent, setOtpSent] = useState(false);
     const [isSendingOtp, setIsSendingOtp] = useState(false);
     const [otp, setOtp] = useState('');
+    
+    // Quản lý đếm ngược (Countdown)
+    const [countdown, setCountdown] = useState(0);
+
+    // Logic xử lý bộ đếm ngược
+    useEffect(() => {
+        let timer: ReturnType<typeof setInterval>;
+        if (countdown > 0) {
+            timer = setInterval(() => {
+                setCountdown((prev) => prev - 1);
+            }, 1000);
+        }
+        return () => clearInterval(timer);
+    }, [countdown]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
@@ -29,8 +45,9 @@ const Register = () => {
             [name]: name === 'age' ? parseInt(value) : value
         });
     };
-
+    
     const handleSendOtp = async () => {
+        // 1. Validate đầu vào
         if (!formData.name || !formData.email || !formData.age || !formData.password || !formData.confirmPassword) {
             alert("Vui lòng điền đầy đủ thông tin (Tên, Email, Tuổi, Mật khẩu) trước khi xác thực!");
             return;
@@ -46,31 +63,40 @@ const Register = () => {
             return;
         }
 
+        // 2. Bắt đầu luồng gửi OTP
         setIsSendingOtp(true);
         try {
-            await api.post('/users/register', {
-                name: formData.name,
-                email: formData.email,
-                password: formData.password,
-                age: formData.age
-            });
-            setOtpSent(true);
-            alert("Mã OTP đã được gửi đến email của bạn!");
-        } catch (error) {
-            // Nếu email đã được đăng ký nhưng chưa xác thực, thử gọi API gửi lại mã
-            try {
-                await api.post(`/users/resend-verification?email=${formData.email}`);
+            if (!otpSent) {
+                // Đăng ký lần đầu
+                await api.post('/users/register', formData);
                 setOtpSent(true);
-                alert("Mã OTP đã được gửi lại!");
-            } catch (resendError) {
-                console.error("Lỗi gửi OTP:", resendError);
-                alert("Email đã tồn tại và đã được kích hoạt, hoặc xảy ra lỗi!");
+                alert("Mã OTP đã được gửi thành công!");
+                setCountdown(60); // Bắt đầu đếm ngược 60s
+            } else {
+                // Gửi lại mã
+                await api.post(`/users/resend-verification?email=${formData.email}`);
+                alert("Mã OTP mới đã được gửi lại!");
+                setCountdown(60); // Bắt đầu đếm ngược 60s
+            }
+        } catch (error: any) {
+            let errorMessage = error.response?.data?.message || "Lỗi gửi OTP";
+
+            // Trích xuất số giây từ Backend nếu có lỗi chặn spam (Rate Limit)
+            const match = errorMessage.match(/\d+/);
+            if (match) {
+                let seconds = parseInt(match[0]);
+                // Nếu dính lỗi 3600 do lệch múi giờ, ép về 60
+                if (seconds > 60) seconds = 60;
+                setCountdown(seconds);
+                alert(`Vui lòng đợi ${seconds} giây nữa để gửi lại mã.`);
+            } else {
+                alert(errorMessage);
             }
         } finally {
+            // Giải phóng trạng thái gửi để nút có thể tương tác (nhưng vẫn bị disabled bởi countdown)
             setIsSendingOtp(false);
         }
     };
-
 
     const handleRegister = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -113,10 +139,17 @@ const Register = () => {
                                 type="button" 
                                 className="btn-submit" 
                                 onClick={handleSendOtp} 
-                                disabled={isSendingOtp}
-                                style={{ width: 'auto', padding: '0 15px', marginTop: 0, backgroundColor: otpSent ? '#28a745' : '#007bff' }}
+                                // Vô hiệu hóa khi đang gửi hoặc đang đếm ngược
+                                disabled={isSendingOtp || countdown > 0}
+                                style={{ 
+                                    width: 'auto', 
+                                    padding: '0 15px', 
+                                    marginTop: 0, 
+                                    backgroundColor: (isSendingOtp || countdown > 0) ? '#6c757d' : (otpSent ? '#28a745' : '#007bff'),
+                                    cursor: (isSendingOtp || countdown > 0) ? 'not-allowed' : 'pointer'
+                                }}
                             >
-                                {isSendingOtp ? 'Đang gửi...' : otpSent ? 'Gửi lại mã' : 'Xác thực'}
+                                {isSendingOtp ? 'Đang gửi...' : countdown > 0 ? `Đợi ${countdown}s` : otpSent ? 'Gửi lại mã' : 'Xác thực'}
                             </button>
                         </div>
                     </div>
@@ -138,7 +171,7 @@ const Register = () => {
                         <div className="password-input-container">
                             <input
                                 name="password"
-                                type={showPassword ? "text" : "password"} // Logic ẩn hiện
+                                type={showPassword ? "text" : "password"}
                                 placeholder="Ít nhất 8 ký tự..."
                                 value={formData.password}
                                 onChange={handleChange}
@@ -147,7 +180,7 @@ const Register = () => {
                             <button 
                                 type="button" 
                                 className="eye-icon-button"
-                                onClick={() => setShowPassword(!showPassword)} // Đảo trạng thái
+                                onClick={() => setShowPassword(!showPassword)}
                             >
                                 {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                             </button>
@@ -160,7 +193,7 @@ const Register = () => {
                         <div className="password-input-container">
                             <input
                                 name="confirmPassword"
-                                type={showConfirmPassword ? "text" : "password"} // Logic ẩn hiện
+                                type={showConfirmPassword ? "text" : "password"}
                                 placeholder="Nhập lại mật khẩu"
                                 value={formData.confirmPassword}
                                 onChange={handleChange}
@@ -169,7 +202,7 @@ const Register = () => {
                             <button 
                                 type="button" 
                                 className="eye-icon-button"
-                                onClick={() => setShowConfirmPassword(!showConfirmPassword)} // Đảo trạng thái
+                                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                             >
                                 {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                             </button>
