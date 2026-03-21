@@ -79,11 +79,20 @@ const Register = () => {
                 setCountdown(60); // Bắt đầu đếm ngược 60s
             }
         } catch (error: any) {
-            let errorMessage = error.response?.data?.message || "Lỗi gửi OTP";
+            console.error("Lỗi API Gửi OTP:", error);
+            let errorMessage = error.response?.data?.message || "";
+
+            if (!error.response) {
+                errorMessage = "Không kết nối được Backend! Lỗi CORS do backend chưa cấu hình @CrossOrigin cho React hoặc Server chưa chạy.";
+            } else if (error.response.status === 400) {
+                errorMessage = errorMessage || "Dữ liệu không hợp lệ. Có thể Backend yêu cầu `username` thay vì `name`, hoặc sai cấu trúc Entity.";
+            } else if (!errorMessage) {
+                errorMessage = "Lỗi gửi OTP không xác định.";
+            }
 
             // Trích xuất số giây từ Backend nếu có lỗi chặn spam (Rate Limit)
             const match = errorMessage.match(/\d+/);
-            if (match) {
+            if (match && error.response?.status !== 400 && !(!error.response)) {
                 let seconds = parseInt(match[0]);
                 // Nếu dính lỗi 3600 do lệch múi giờ, ép về 60
                 if (seconds > 60) seconds = 60;
@@ -131,35 +140,12 @@ const Register = () => {
                         <input name="name" type="text" placeholder="Nguyễn Văn A" value={formData.name} onChange={handleChange} required />
                     </div>
 
-                    <div className="form-group" style={{ marginBottom: '15px' }}>
-                        <label>Email</label>
-                        <div style={{ display: 'flex', gap: '10px' }}>
-                            <input name="email" type="email" placeholder="example@mail.com" value={formData.email} onChange={handleChange} required style={{ flex: 1 }} />
-                            <button 
-                                type="button" 
-                                className="btn-submit" 
-                                onClick={handleSendOtp} 
-                                // Vô hiệu hóa khi đang gửi hoặc đang đếm ngược
-                                disabled={isSendingOtp || countdown > 0}
-                                style={{ 
-                                    width: 'auto', 
-                                    padding: '0 15px', 
-                                    marginTop: 0, 
-                                    backgroundColor: (isSendingOtp || countdown > 0) ? '#6c757d' : (otpSent ? '#28a745' : '#007bff'),
-                                    cursor: (isSendingOtp || countdown > 0) ? 'not-allowed' : 'pointer'
-                                }}
-                            >
-                                {isSendingOtp ? 'Đang gửi...' : countdown > 0 ? `Đợi ${countdown}s` : otpSent ? 'Gửi lại mã' : 'Xác thực'}
-                            </button>
+                    <div className="form-row" style={{ display: 'flex', gap: '10px', marginBottom: '15px' }}>
+                        <div className="form-group" style={{ flex: 2, marginBottom: '0' }}>
+                            <label>Email</label>
+                            <input name="email" type="email" placeholder="example@mail.com" value={formData.email} onChange={handleChange} required />
                         </div>
-                    </div>
-
-                    <div className="form-row" style={{ display: 'flex', gap: '10px' }}>
-                        <div className="form-group" style={{ flex: 2 }}>
-                            <label>Mã OTP</label>
-                            <input type="text" placeholder="Nhập mã 6 số" value={otp} onChange={(e) => setOtp(e.target.value)} required maxLength={6} disabled={!otpSent} />
-                        </div>
-                        <div className="form-group" style={{ flex: 1 }}>
+                        <div className="form-group" style={{ flex: 1, marginBottom: '0' }}>
                             <label>Tuổi</label>
                             <input name="age" type="number" value={formData.age} onChange={handleChange} required />
                         </div>
@@ -209,7 +195,42 @@ const Register = () => {
                         </div>
                     </div>
 
-                    <button type="submit" className="btn-submit btn-register">Đăng Ký Thành Viên</button>
+                    {/* Vùng xác thực OTP */}
+                    <div className="form-group" style={{ marginTop: '20px', padding: '15px', border: '1px solid #ddd', borderRadius: '8px', backgroundColor: '#fdfdfd' }}>
+                        <label>Xác thực Email</label>
+                        <p style={{ fontSize: '13px', color: '#666', marginBottom: '10px', marginTop: '-5px' }}>
+                            * Vui lòng điền đủ thông tin phía trên trước khi nhận mã nhé.
+                        </p>
+                        <div style={{ display: 'flex', gap: '10px' }}>
+                            <input 
+                                type="text" 
+                                placeholder="Nhập mã 6 số" 
+                                value={otp} 
+                                onChange={(e) => setOtp(e.target.value)} 
+                                required={otpSent} 
+                                maxLength={6} 
+                                disabled={!otpSent} 
+                                style={{ flex: 1, margin: 0 }}
+                            />
+                            <button 
+                                type="button" 
+                                className="btn-submit" 
+                                onClick={handleSendOtp} 
+                                disabled={isSendingOtp || countdown > 0}
+                                style={{ 
+                                    width: 'auto', 
+                                    padding: '0 15px', 
+                                    marginTop: 0, 
+                                    backgroundColor: (isSendingOtp || countdown > 0) ? '#6c757d' : (otpSent ? '#28a745' : '#007bff'),
+                                    cursor: (isSendingOtp || countdown > 0) ? 'not-allowed' : 'pointer'
+                                }}
+                            >
+                                {isSendingOtp ? 'Đang gửi...' : countdown > 0 ? `Đợi ${countdown}s` : otpSent ? 'Gửi lại mã' : 'Nhận mã OTP'}
+                            </button>
+                        </div>
+                    </div>
+
+                    <button type="submit" className="btn-submit btn-register" style={{ marginTop: '10px' }}>Đăng Ký Thành Viên</button>
                 </form>
                 <div className="auth-footer">
                     <p>Đã có tài khoản? <Link to="/login">Đăng nhập ngay</Link></p>
