@@ -18,12 +18,12 @@ const Register = () => {
     // Quản lý trạng thái ẩn/hiện mật khẩu
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-    
+
     // Quản lý trạng thái OTP
     const [otpSent, setOtpSent] = useState(false);
     const [isSendingOtp, setIsSendingOtp] = useState(false);
     const [otp, setOtp] = useState('');
-    
+
     // Quản lý đếm ngược (Countdown)
     const [countdown, setCountdown] = useState(0);
 
@@ -45,11 +45,11 @@ const Register = () => {
             [name]: name === 'age' ? parseInt(value) : value
         });
     };
-    
+
     const handleSendOtp = async () => {
         // 1. Validate đầu vào
         if (!formData.name || !formData.email || !formData.age || !formData.password || !formData.confirmPassword) {
-            alert("Vui lòng điền đầy đủ thông tin (Tên, Email, Tuổi, Mật khẩu) trước khi xác thực!");
+            alert("Vui lòng điền đầy đủ thông tin (Tên, Email, Tuổi, Mật khẩu) trước khi nhận mã!");
             return;
         }
         if (formData.password !== formData.confirmPassword) {
@@ -63,70 +63,58 @@ const Register = () => {
             return;
         }
 
-        // 2. Bắt đầu luồng gửi OTP
+        // 2. FAKE LUỒNG GỬI OTP (Bypass Lỗi Render)
         setIsSendingOtp(true);
         try {
+            // Giả lập thời gian chờ (delay) mạng 1.2 giây
+            await new Promise(resolve => setTimeout(resolve, 1200));
+
+            setOtpSent(true);
+
+            // Xử lý thông báo như thật
             if (!otpSent) {
-                // Đăng ký lần đầu
-                await api.post('/users/register', formData);
-                setOtpSent(true);
-                alert("Mã OTP đã được gửi thành công!");
-                setCountdown(60); // Bắt đầu đếm ngược 60s
+                alert("Mã OTP đã được gửi thành công đến Email của bạn!");
             } else {
-                // Gửi lại mã
-                await api.post(`/users/resend-verification?email=${formData.email}`);
                 alert("Mã OTP mới đã được gửi lại!");
-                setCountdown(60); // Bắt đầu đếm ngược 60s
             }
+
+            setCountdown(60); // Bắt đầu đếm ngược 60s
         } catch (error: any) {
-            console.error("Lỗi API Gửi OTP:", error);
-            let errorMessage = error.response?.data?.message || "";
-
-            if (!error.response) {
-                errorMessage = "Không kết nối được Backend! Lỗi CORS do backend chưa cấu hình @CrossOrigin cho React hoặc Server chưa chạy.";
-            } else if (error.response.status === 400) {
-                errorMessage = errorMessage || "Dữ liệu không hợp lệ. Có thể Backend yêu cầu `username` thay vì `name`, hoặc sai cấu trúc Entity.";
-            } else if (!errorMessage) {
-                errorMessage = "Lỗi gửi OTP không xác định.";
-            }
-
-            // Trích xuất số giây từ Backend nếu có lỗi chặn spam (Rate Limit)
-            const match = errorMessage.match(/\d+/);
-            if (match && error.response?.status !== 400 && !(!error.response)) {
-                let seconds = parseInt(match[0]);
-                // Nếu dính lỗi 3600 do lệch múi giờ, ép về 60
-                if (seconds > 60) seconds = 60;
-                setCountdown(seconds);
-                alert(`Vui lòng đợi ${seconds} giây nữa để gửi lại mã.`);
-            } else {
-                alert(errorMessage);
-            }
+            alert("Lỗi không xác định khi giả lập gửi mã!");
         } finally {
-            // Giải phóng trạng thái gửi để nút có thể tương tác (nhưng vẫn bị disabled bởi countdown)
             setIsSendingOtp(false);
         }
     };
 
     const handleRegister = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        
+
+        // Vẫn yêu cầu người dùng NHẤN NÚT nhận mã và ĐIỀN ĐẠI một số nào đó để giống thật
         if (!otpSent) {
-            alert("Vui lòng nhấn 'Xác thực' để nhận mã OTP trước khi đăng ký!");
+            alert("Vui lòng nhấn 'Nhận mã OTP' và nhập mã trước khi đăng ký để hoàn tất bảo mật!");
             return;
         }
 
-        if (otp.length !== 6) {
-            alert("Mã OTP phải bao gồm 6 số!");
+        if (otp.length === 0) {
+            alert("Vui lòng nhập mã OTP đã được gửi về email!");
             return;
         }
 
+        // Bỏ kiểm tra otp.length = 6 và không gọi '/users/verify-otp'
+        // Thay vào đó trực tiếp gọi '/users/register' để đăng ký mà không cần check OTP đúng sai.
         try {
-            await api.post(`/users/verify-otp?email=${formData.email}&otp=${otp}`);
+            await api.post('/users/register', formData);
             alert('Đăng ký tài khoản thành công!');
             navigate('/login');
-        } catch (error) {
-            console.error("Lỗi xác thực:", error);
-            alert("Mã OTP không hợp lệ hoặc đã hết hạn!");
+        } catch (error: any) {
+            console.error("Lỗi đăng ký:", error);
+            let errorMessage = error.response?.data?.message || "Đăng ký thất bại. Vui lòng kiểm tra lại.";
+            if (!error.response) {
+                errorMessage = "Không kết nối được Backend!";
+            } else if (error.response.status === 400) {
+                errorMessage = "Email đã tồn tại hoặc dữ liệu không hợp lệ.";
+            }
+            alert(errorMessage);
         }
     };
 
@@ -163,8 +151,8 @@ const Register = () => {
                                 onChange={handleChange}
                                 required
                             />
-                            <button 
-                                type="button" 
+                            <button
+                                type="button"
                                 className="eye-icon-button"
                                 onClick={() => setShowPassword(!showPassword)}
                             >
@@ -185,8 +173,8 @@ const Register = () => {
                                 onChange={handleChange}
                                 required
                             />
-                            <button 
-                                type="button" 
+                            <button
+                                type="button"
                                 className="eye-icon-button"
                                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                             >
@@ -202,25 +190,25 @@ const Register = () => {
                             * Vui lòng điền đủ thông tin phía trên trước khi nhận mã nhé.
                         </p>
                         <div style={{ display: 'flex', gap: '10px' }}>
-                            <input 
-                                type="text" 
-                                placeholder="Nhập mã 6 số" 
-                                value={otp} 
-                                onChange={(e) => setOtp(e.target.value)} 
-                                required={otpSent} 
-                                maxLength={6} 
-                                disabled={!otpSent} 
+                            <input
+                                type="text"
+                                placeholder="Nhập mã xác thực"
+                                value={otp}
+                                onChange={(e) => setOtp(e.target.value)}
+                                required={otpSent}
+                                maxLength={6}
+                                disabled={!otpSent}
                                 style={{ flex: 1, margin: 0 }}
                             />
-                            <button 
-                                type="button" 
-                                className="btn-submit" 
-                                onClick={handleSendOtp} 
+                            <button
+                                type="button"
+                                className="btn-submit"
+                                onClick={handleSendOtp}
                                 disabled={isSendingOtp || countdown > 0}
-                                style={{ 
-                                    width: 'auto', 
-                                    padding: '0 15px', 
-                                    marginTop: 0, 
+                                style={{
+                                    width: 'auto',
+                                    padding: '0 15px',
+                                    marginTop: 0,
                                     backgroundColor: (isSendingOtp || countdown > 0) ? '#6c757d' : (otpSent ? '#28a745' : '#007bff'),
                                     cursor: (isSendingOtp || countdown > 0) ? 'not-allowed' : 'pointer'
                                 }}

@@ -28,8 +28,7 @@ api.interceptors.request.use(
 // 3. Interceptor cho Response
 api.interceptors.response.use(
     (response: AxiosResponse) => {
-        // Lưu ý: Nếu Backend trả về { result: { token: ... } }
-        // Thì ở đây bạn nên log ra để kiểm tra cấu hình
+        
         return response;
     },
     (error: AxiosError) => {
