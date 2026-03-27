@@ -23,7 +23,8 @@ const Register = () => {
     const [otpSent, setOtpSent] = useState(false);
     const [isSendingOtp, setIsSendingOtp] = useState(false);
     const [otp, setOtp] = useState('');
-
+    const [generatedOtp, setGeneratedOtp] = useState('');
+    
     // Quản lý đếm ngược (Countdown)
     const [countdown, setCountdown] = useState(0);
 
@@ -63,24 +64,22 @@ const Register = () => {
             return;
         }
 
-        // 2. FAKE LUỒNG GỬI OTP (Bypass Lỗi Render)
+        // 2. FAKE LUỒNG GỬI OTP (Tạo mã trực tiếp)
         setIsSendingOtp(true);
         try {
-            // Giả lập thời gian chờ (delay) mạng 1.2 giây
-            await new Promise(resolve => setTimeout(resolve, 1200));
+            // Giả lập thời gian chờ (delay) mạng 0.8 giây
+            await new Promise(resolve => setTimeout(resolve, 800));
 
+            const newOtp = Math.floor(100000 + Math.random() * 900000).toString();
+            setGeneratedOtp(newOtp);
             setOtpSent(true);
 
-            // Xử lý thông báo như thật
-            if (!otpSent) {
-                alert("Mã OTP đã được gửi thành công đến Email của bạn!");
-            } else {
-                alert("Mã OTP mới đã được gửi lại!");
-            }
+            // Hiển thị trực tiếp mã cho user (Mô phỏng như kiểu notification gửi vào đt/email)
+            alert(`[HỆ THỐNG DEMO]\nMã OTP xác thực của bạn là: ${newOtp}\n\n(Vui lòng nhập mã này vào ô xác thực phía dưới)`);
 
             setCountdown(60); // Bắt đầu đếm ngược 60s
         } catch (error: any) {
-            alert("Lỗi không xác định khi giả lập gửi mã!");
+            alert("Lỗi không xác định khi tạo mã OTP!");
         } finally {
             setIsSendingOtp(false);
         }
@@ -89,19 +88,18 @@ const Register = () => {
     const handleRegister = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
 
-        // Vẫn yêu cầu người dùng NHẤN NÚT nhận mã và ĐIỀN ĐẠI một số nào đó để giống thật
         if (!otpSent) {
             alert("Vui lòng nhấn 'Nhận mã OTP' và nhập mã trước khi đăng ký để hoàn tất bảo mật!");
             return;
         }
 
-        if (otp.length === 0) {
-            alert("Vui lòng nhập mã OTP đã được gửi về email!");
+        if (otp !== generatedOtp) {
+            alert("Mã OTP không chính xác! Vui lòng kiểm tra lại.");
             return;
         }
 
-        // Bỏ kiểm tra otp.length = 6 và không gọi '/users/verify-otp'
-        // Thay vào đó trực tiếp gọi '/users/register' để đăng ký mà không cần check OTP đúng sai.
+        // Đã qua bước check OTP ở Frontend thành công
+        // Trực tiếp gọi '/users/register' để tạo tài khoản thật trong DB
         try {
             await api.post('/users/register', formData);
             alert('Đăng ký tài khoản thành công!');

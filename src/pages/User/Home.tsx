@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../services/api';
+import ChatBox from '../../components/ChatBox/ChatBox';
 import '../../styles/Home.css';
 
 interface Book {
@@ -223,6 +224,9 @@ const Home = () => {
                     Đăng xuất
                 </button>
             </div>
+
+            {/* Thêm ChatBox vào trang chủ */}
+            <ChatBox />
         </div>
     );
 };
