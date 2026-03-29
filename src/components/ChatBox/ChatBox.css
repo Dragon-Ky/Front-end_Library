@@ -11,9 +11,10 @@
 }
 
 .chatbox-container {
-  position: fixed;
-  bottom: 24px;
-  right: 24px;
+  position: relative;
+  width: 60px;
+  height: 60px;
+  align-self: flex-end;
   z-index: 9999;
   font-family: 'Inter', -apple-system, system-ui, sans-serif;
 }
@@ -50,12 +51,12 @@
 
 /* Main Chat Window */
 .chatbox-window {
-  position: absolute;
-  bottom: 80px;
-  right: 0;
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
   width: 380px;
   height: 600px;
-  max-height: calc(100vh - 120px);
+  max-height: calc(100vh - 60px);
   background: var(--chatbox-bg);
   border-radius: 20px;
   box-shadow: var(--chatbox-shadow);
@@ -387,7 +388,7 @@
   .chatbox-window {
     width: calc(100vw - 32px);
     right: 16px;
-    bottom: 80px;
-    height: calc(100vh - 100px);
+    bottom: 16px;
+    height: calc(100vh - 32px);
   }
 }

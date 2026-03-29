@@ -203,8 +203,10 @@ const Home = () => {
                     </div>
                 )}
             </div>
+            {/* Thêm ChatBox vào trang chủ */}
 
             <div className="fixed-actions-container">
+                <ChatBox />
                 <button
                     onClick={() => navigate('/my-borrowings')}
                     className="float-btn btn-borrowings"
@@ -225,8 +227,7 @@ const Home = () => {
                 </button>
             </div>
 
-            {/* Thêm ChatBox vào trang chủ */}
-            <ChatBox />
+
         </div>
     );
 };

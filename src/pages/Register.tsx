@@ -24,7 +24,7 @@ const Register = () => {
     const [isSendingOtp, setIsSendingOtp] = useState(false);
     const [otp, setOtp] = useState('');
     const [generatedOtp, setGeneratedOtp] = useState('');
-    
+
     // Quản lý đếm ngược (Countdown)
     const [countdown, setCountdown] = useState(0);
 
@@ -185,7 +185,7 @@ const Register = () => {
                     <div className="form-group" style={{ marginTop: '20px', padding: '15px', border: '1px solid #ddd', borderRadius: '8px', backgroundColor: '#fdfdfd' }}>
                         <label>Xác thực Email</label>
                         <p style={{ fontSize: '13px', color: '#666', marginBottom: '10px', marginTop: '-5px' }}>
-                            * Vui lòng điền đủ thông tin phía trên trước khi nhận mã nhé.
+                            * Vui lòng điền đủ thông tin phía trên trước khi nhận mã nhé.(do render chặn gửi email nên mọi người gõ bất kỳ số nào cũng được)
                         </p>
                         <div style={{ display: 'flex', gap: '10px' }}>
                             <input
