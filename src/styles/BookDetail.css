@@ -70,6 +70,12 @@
 
 /* Category */
 
+.detail-categories-wrapper {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
 .detail-category {
     font-size: 12px;
     background: #eef2ff;
@@ -77,6 +83,7 @@
     padding: 4px 10px;
     border-radius: 6px;
     font-weight: 600;
+    display: inline-block;
 }
 
 /* Title */

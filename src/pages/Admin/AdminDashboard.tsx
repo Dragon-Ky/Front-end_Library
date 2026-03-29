@@ -10,7 +10,7 @@ interface Book {
     id?: number;
     title: string;
     author: string;
-    category: string;
+    categories: string[];
     totalQuantity: number; // Phải là totalQuantity mới khớp Backend
     availableQuantity: number;
     description: string;
@@ -32,7 +32,7 @@ const BookManager = () => {
     const [formData, setFormData] = useState<Book>({
         title: '',
         author: '',
-        category: '',
+        categories: [],
         totalQuantity: 0,
         availableQuantity: 0,
         description: '',
@@ -122,7 +122,7 @@ const BookManager = () => {
     const handleCloseModal = () => {
         setShowModal(false);
         setEditingBook(null);
-        setFormData({ title: '', author: '', category: '', totalQuantity: 0, availableQuantity: 0, description: '', image: '' });
+        setFormData({ title: '', author: '', categories: [], totalQuantity: 0, availableQuantity: 0, description: '', image: '' });
     };
 
     return (
@@ -168,7 +168,15 @@ const BookManager = () => {
                                     <div className="book-author" title={book.author}>{book.author}</div>
                                 </td>
                                 <td>
-                                    <span className="book-category">{book.category}</span>
+                                    <div className="book-categories-container">
+                                        {Array.isArray(book.categories) ? (
+                                            book.categories.map((cat, index) => (
+                                                <span key={index} className="book-category">{cat}</span>
+                                            ))
+                                        ) : (
+                                            <span className="book-category">{book.categories}</span>
+                                        )}
+                                    </div>
                                 </td>
                                 <td>
                                     <p className="book-description" title={book.description}>
@@ -229,7 +237,7 @@ const BookManager = () => {
                                 </div>
                                 <div className="form-group">
                                     <label className="form-label">Thể loại</label>
-                                    <input type="text" placeholder="Thể loại..." value={formData.category} onChange={e => setFormData({ ...formData, category: e.target.value })} required className="form-input" />
+                                    <input type="text" placeholder="Thể loại (cách nhau dấu phẩy)..." value={Array.isArray(formData.categories) ? formData.categories.join(', ') : ''} onChange={e => setFormData({ ...formData, categories: e.target.value.split(',').map(c => c.trim()) })} required className="form-input" />
                                 </div>
                             </div>
 

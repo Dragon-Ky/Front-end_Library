@@ -8,7 +8,7 @@ interface Book {
     id: number;
     title: string;
     author: string;
-    category: string;
+    categories: string[];
     description: string;
     availableQuantity: number;
     image?: string;
@@ -147,7 +147,11 @@ const Home = () => {
                                 </div>
 
                                 <div className="book-body">
-                                    <span className="book-tag">{book.category}</span>
+                                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginBottom: '8px' }}>
+                                        {Array.isArray(book.categories) ? book.categories.map((cat, i) => (
+                                            <span key={i} className="book-tag">{cat}</span>
+                                        )) : <span className="book-tag">{(book as any).categories || ''}</span>}
+                                    </div>
 
                                     <h3 className="book-title-text" title={book.title}>
                                         {book.title}

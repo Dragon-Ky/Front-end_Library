@@ -6,7 +6,7 @@ interface Book {
     id: number;
     title: string;
     author: string;
-    category: string;
+    categories: string[];
     description: string;
 
     image?: string;
@@ -86,7 +86,11 @@ const BookDetail = () => {
 
                     {/* Cột phải: Thông tin chi tiết */}
                     <div className="detail-right">
-                        <span className="detail-category">{book.category}</span>
+                        <div className="detail-categories-wrapper">
+                            {Array.isArray(book.categories) ? book.categories.map((cat, i) => (
+                                <span key={i} className="detail-category">{cat}</span>
+                            )) : <span className="detail-category">{book.categories || ''}</span>}
+                        </div>
                         <h1 className="detail-title">{book.title}</h1>
                         <div className="detail-meta">
                             <span>Tác giả: <strong>{book.author}</strong></span>
