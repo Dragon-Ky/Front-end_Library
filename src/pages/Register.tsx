@@ -23,7 +23,6 @@ const Register = () => {
     const [otpSent, setOtpSent] = useState(false);
     const [isSendingOtp, setIsSendingOtp] = useState(false);
     const [otp, setOtp] = useState('');
-    const [generatedOtp, setGeneratedOtp] = useState('');
 
     // Quản lý đếm ngược (Countdown)
     const [countdown, setCountdown] = useState(0);
@@ -64,22 +63,26 @@ const Register = () => {
             return;
         }
 
-        // 2. FAKE LUỒNG GỬI OTP (Tạo mã trực tiếp)
         setIsSendingOtp(true);
         try {
-            // Giả lập thời gian chờ (delay) mạng 0.8 giây
-            await new Promise(resolve => setTimeout(resolve, 800));
-
-            const newOtp = Math.floor(100000 + Math.random() * 900000).toString();
-            setGeneratedOtp(newOtp);
-            setOtpSent(true);
-
-            // Hiển thị trực tiếp mã cho user (Mô phỏng như kiểu notification gửi vào đt/email)
-            alert(`[HỆ THỐNG DEMO]\nMã OTP xác thực của bạn là: ${newOtp}\n\n(Vui lòng nhập mã này vào ô xác thực phía dưới)`);
-
+            if (!otpSent) {
+                // Gọi đăng ký để tạo tài khoản (chưa active) và gửi mail OTP
+                await api.post('/users/register', formData);
+                alert("Mã OTP đã được gửi đến email của bạn. Vui lòng kiểm tra hộp thư!");
+                setOtpSent(true);
+            } else {
+                // Nút "Gửi lại mã" được nhấn
+                await api.post(`/users/resend-verification?email=${formData.email}`);
+                alert("Mã OTP mới đã được gửi lại vào email của bạn!");
+            }
             setCountdown(60); // Bắt đầu đếm ngược 60s
         } catch (error: any) {
-            alert("Lỗi không xác định khi tạo mã OTP!");
+            console.error("Lỗi khi gửi OTP:", error);
+            let errorMessage = "Không thể gửi mã OTP. Vui lòng kiểm tra lại email hoặc backend đang lỗi.";
+            if (error.response?.status === 400) {
+                errorMessage = error.response.data?.message || "Email đã tồn tại hoặc dữ liệu không hợp lệ.";
+            }
+            alert(errorMessage);
         } finally {
             setIsSendingOtp(false);
         }
@@ -93,25 +96,18 @@ const Register = () => {
             return;
         }
 
-        if (otp !== generatedOtp) {
-            alert("Mã OTP không chính xác! Vui lòng kiểm tra lại.");
+        if (!otp || otp.length < 6) {
+            alert("Vui lòng nhập đầy đủ mã OTP 6 chữ số.");
             return;
         }
 
-        // Đã qua bước check OTP ở Frontend thành công
-        // Trực tiếp gọi '/users/register' để tạo tài khoản thật trong DB
         try {
-            await api.post('/users/register', formData);
+            await api.post(`/users/verify-otp?email=${formData.email}&otp=${otp}`);
             alert('Đăng ký tài khoản thành công!');
             navigate('/login');
         } catch (error: any) {
-            console.error("Lỗi đăng ký:", error);
-            let errorMessage = error.response?.data?.message || "Đăng ký thất bại. Vui lòng kiểm tra lại.";
-            if (!error.response) {
-                errorMessage = "Không kết nối được Backend!";
-            } else if (error.response.status === 400) {
-                errorMessage = "Email đã tồn tại hoặc dữ liệu không hợp lệ.";
-            }
+            console.error("Lỗi xác thực OTP:", error);
+            const errorMessage = error.response?.data?.message || "Mã OTP không chính xác hoặc đã hết hạn!";
             alert(errorMessage);
         }
     };
@@ -181,11 +177,10 @@ const Register = () => {
                         </div>
                     </div>
 
-                    {/* Vùng xác thực OTP */}
                     <div className="form-group" style={{ marginTop: '20px', padding: '15px', border: '1px solid #ddd', borderRadius: '8px', backgroundColor: '#fdfdfd' }}>
                         <label>Xác thực Email</label>
                         <p style={{ fontSize: '13px', color: '#666', marginBottom: '10px', marginTop: '-5px' }}>
-                            * Vui lòng điền đủ thông tin phía trên trước khi nhận mã nhé.(do render chặn gửi email nên mọi người gõ bất kỳ số nào cũng được)
+                            * Vui lòng điền đủ thông tin phía trên trước khi nhận mã nhé.
                         </p>
                         <div style={{ display: 'flex', gap: '10px' }}>
                             <input
