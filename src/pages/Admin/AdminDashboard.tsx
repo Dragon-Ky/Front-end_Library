@@ -267,17 +267,17 @@ const AdminDashboard = () => {
         }
     };
 
-    const handleCleanup = async () => {
-        if (window.confirm('Bạn có chắc chắn muốn dọn dẹp các tài khoản rác (chưa kích hoạt)?')) {
-            try {
-                const response = await api.delete('/users/cleanup');
-                alert(response.data || 'Đã dọn dẹp sạch tài khoản ảo!');
-            } catch (error) {
-                console.error('Lỗi khi dọn dẹp:', error);
-                alert('Có lỗi xảy ra khi dọn dẹp tài khoản.');
-            }
-        }
-    };
+    // const handleCleanup = async () => {
+    //     if (window.confirm('Bạn có chắc chắn muốn dọn dẹp các tài khoản rác (chưa kích hoạt)?')) {
+    //         try {
+    //             const response = await api.delete('/users/cleanup');
+    //             alert(response.data || 'Đã dọn dẹp sạch tài khoản ảo!');
+    //         } catch (error) {
+    //             console.error('Lỗi khi dọn dẹp:', error);
+    //             alert('Có lỗi xảy ra khi dọn dẹp tài khoản.');
+    //         }
+    //     }
+    // };
 
     return (
         <div className="bg-gray-50 min-h-screen">
