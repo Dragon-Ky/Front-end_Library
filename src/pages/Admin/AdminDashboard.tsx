@@ -38,6 +38,7 @@ const BookManager = () => {
         description: '',
         image: ''
     });
+    const [categoriesText, setCategoriesText] = useState('');
 
     useEffect(() => {
         fetchBooks(currentPage);
@@ -116,6 +117,7 @@ const BookManager = () => {
     const handleEditClick = (book: Book) => {
         setEditingBook(book);
         setFormData({ ...book });
+        setCategoriesText(Array.isArray(book.categories) ? book.categories.join(', ') : book.categories || '');
         setShowModal(true);
     };
 
@@ -123,6 +125,7 @@ const BookManager = () => {
         setShowModal(false);
         setEditingBook(null);
         setFormData({ title: '', author: '', categories: [], totalQuantity: 0, availableQuantity: 0, description: '', image: '' });
+        setCategoriesText('');
     };
 
     return (
@@ -237,7 +240,7 @@ const BookManager = () => {
                                 </div>
                                 <div className="form-group">
                                     <label className="form-label">Thể loại</label>
-                                    <input type="text" placeholder="Thể loại (cách nhau dấu phẩy)..." value={Array.isArray(formData.categories) ? formData.categories.join(', ') : ''} onChange={e => setFormData({ ...formData, categories: e.target.value.split(',').map(c => c.trim()) })} required className="form-input" />
+                                    <input type="text" placeholder="Thể loại (cách nhau dấu phẩy)..." value={categoriesText} onChange={e => { setCategoriesText(e.target.value); setFormData({ ...formData, categories: e.target.value.split(',').map(c => c.trim()).filter(c => c !== '') }); }} required className="form-input" />
                                 </div>
                             </div>
 
