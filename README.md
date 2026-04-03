@@ -15,6 +15,9 @@
 - **Frontend Live Demo:** [https://front-end-library.onrender.com](https://front-end-library.onrender.com)
 - **Backend (Spring Boot) Repository:** [https://github.com/Dragon-Ky/Bookstore-API.git](https://github.com/Dragon-Ky/Bookstore-API.git)
 
+> [!WARNING]
+> **Server Wake-up Time:** Because the backend is deployed on Render's free tier, the server may go to sleep after periods of inactivity. Upon initial access, **please allow 2 to 3 minutes for the server to fully start up** and respond to requests.
+
 ---
 
 ## 🎯 About The Project
