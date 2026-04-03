@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import api from '../services/api';
-import { Eye, EyeOff } from 'lucide-react'; 
+import { Eye, EyeOff } from 'lucide-react';
 import '../styles/Login.css';
 
 const Login = () => {
@@ -24,7 +24,7 @@ const Login = () => {
                 localStorage.setItem('token', token);
                 localStorage.setItem('role', role);
                 alert(`Đăng nhập thành công!`);
-                
+
                 if (role === 'ADMIN') {
                     navigate('/admin/dashboard');
                 } else {
@@ -49,7 +49,7 @@ const Login = () => {
                             <label>Email của bạn</label>
                             <input
                                 type="email"
-                                placeholder="admin@bookstore.com"
+                                placeholder="admin123@bookstore.com"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                                 required
@@ -62,7 +62,7 @@ const Login = () => {
                                 <input
                                     // Thay đổi type dynamic dựa trên state
                                     type={showPassword ? "text" : "password"}
-                                    placeholder="admin123"
+                                    placeholder="admin1234"
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
                                     required
