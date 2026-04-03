@@ -199,7 +199,7 @@ const Home = () => {
                 )}
 
                 {/* Phân trang */}
-                {!loading && totalPages > 1 && (
+                {!loading && totalPages > 0 && (
                     <div className="pagination-bar">
                         <button disabled={currentPage === 1} onClick={() => setCurrentPage(p => p - 1)}>Trước</button>
                         <span className="page-info">{currentPage} / {totalPages}</span>
