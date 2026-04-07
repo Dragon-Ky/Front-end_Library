@@ -63,17 +63,37 @@ const BookManager = () => {
         }
     };
 
-    // 3. Lấy danh sách (READ)
+    // 3. Lấy danh sách (READ) - Lấy tất cả và phân trang ở Frontend
     const fetchBooks = async (page: number) => {
         setLoading(true);
         try {
-
-            const response = await api.get(`/books?page=${page}&size=${pageSize}`);
+            // Lấy toàn bộ sách (size lớn) để Frontend tự đếm và phân trang
+            const response = await api.get(`/books?page=1&size=10000`);
 
             if (response.data.result) {
-                const { content, totalPages } = response.data.result;
-                setBooks(content);
-                setTotalPages(totalPages);
+                let allBooks: Book[] = [];
+                
+                // Trích xuất toàn bộ mảng sách trả về
+                if (Array.isArray(response.data.result)) {
+                    allBooks = response.data.result;
+                } else if (response.data.result.content) {
+                    allBooks = response.data.result.content;
+                }
+
+                // Tự tính tổng số trang dựa trên mảng sách thu được
+                const calculatedTotalPages = Math.ceil(allBooks.length / pageSize) || 1;
+                
+                // Trích xuất các cuốn sách dành cho trang hiện tại
+                const startIndex = (page - 1) * pageSize;
+                const pageContent = allBooks.slice(startIndex, startIndex + pageSize);
+                
+                setBooks(pageContent);
+                setTotalPages(calculatedTotalPages);
+                
+                // Đảm bảo không bị quá trang khi xóa sách
+                if (page > calculatedTotalPages && calculatedTotalPages > 0) {
+                    setCurrentPage(calculatedTotalPages);
+                }
             }
         } catch (error) {
             console.error('Lỗi:', error);
@@ -206,9 +226,9 @@ const BookManager = () => {
 
             {/* Phân trang */}
             <div className="admin-pagination">
-                <button disabled={currentPage === 1} onClick={() => setCurrentPage(p => p - 1)} className="pagination-btn">Trước</button>
-                <span className="pagination-info">Trang {currentPage} / {totalPages || 1}</span>
-                <button disabled={currentPage === totalPages || totalPages === 0} onClick={() => setCurrentPage(p => p + 1)} className="pagination-btn">Sau</button>
+                <button disabled={currentPage <= 1} onClick={() => setCurrentPage(p => p - 1)} className="pagination-btn">Trước</button>
+                <span className="pagination-info">Trang {currentPage > (totalPages || 1) ? (totalPages || 1) : currentPage} / {totalPages || 1}</span>
+                <button disabled={currentPage >= (totalPages || 1)} onClick={() => setCurrentPage(p => p + 1)} className="pagination-btn">Sau</button>
             </div>
 
             {/* Modal Form */}
